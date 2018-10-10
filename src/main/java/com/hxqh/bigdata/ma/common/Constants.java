@@ -58,7 +58,7 @@ public interface Constants {
     Integer FILM_OFFSET_TITLE = 4;
     Integer FILM_OFFSET_PLAYNUM = 6;
     Integer FILM_OFFSET_SCORE = 7;
-    Integer FILM_TOP_NUM = 10;
+    Integer FILM_TOP_NUM = 50;
 
 
     String FILM_INDEX = "front_film";
@@ -78,7 +78,7 @@ public interface Constants {
     /**
      * soap
      */
-    Integer SOAP_TOP_NUM = 10;
+    Integer SOAP_TOP_NUM = 50;
 
     String SOAP_PLAYNUM = "soap_playnum";
     String SOAP_LABEL_PIE = "soap_label_pie";
@@ -92,7 +92,7 @@ public interface Constants {
     /**
      * variety
      */
-    Integer VARIETY_TOP_NUM = 10;
+    Integer VARIETY_TOP_NUM = 50;
 
 
     String VARIETY_PLAYNUM = "variety_playnum";
@@ -104,7 +104,7 @@ public interface Constants {
     /**
      * book
      */
-    Integer BOOK_TOP_NUM = 10;
+    Integer BOOK_TOP_NUM = 50;
 
     String BOOKS_ANALYSIS_INDEX = "front_book_index";
     String BOOKS_ANALYSIS_TYPE = "front_book_type";
@@ -118,7 +118,7 @@ public interface Constants {
     /**
      * literature
      */
-    Integer LITERATURE_TOP_NUM = 10;
+    Integer LITERATURE_TOP_NUM = 50;
 
     String LITERATURE_PLAYNUM = "literature_title_clicknum";
     String LITERATURE_LABEL_PIE = "literature_label_pie";
