@@ -45,7 +45,7 @@ object MarketInteractiveQuery extends Serializable {
       breakable {
         if (taskList.size() == 0) {
           Thread.sleep(Constants.TEN_SECOND)
-          println("Spark作业监控中 " + (new Date()).toString)
+          // println("Spark作业监控中 " + (new Date()).toString)
           break
         } else {
           val task = taskList.get(0)
