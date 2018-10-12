@@ -19,9 +19,12 @@ object MarketVarietySpark {
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder.appName("MarketVarietySpark").getOrCreate
+    //    val spark = SparkSession.builder.master("local").appName("MarketVarietySpark").getOrCreate
     registerESTable(spark, "film", "film_data", "film")
     val startDate = DateUtils.getYesterdayDate()
     val endDate = DateUtils.getTodayDate()
+    //    val startDate = DateUtils.getTodayDate()
+    //    val endDate = DateUtils.getTomorrow()
 
 
     val sql = "select * from Film  where  category = 'variety'  and addTime >='" + startDate + "' and addTime <= '" + endDate + "'"
@@ -31,7 +34,8 @@ object MarketVarietySpark {
 
     // [2018-03-20 10:45:36,variety,0,null,：医学泰斗寻找长寿秘诀 馒头白水竟是百岁老人的日常食谱,内地 其它,101000,0.0,iqiyi,刘婧,27]
     // 播放量Top10
-    variety.distinct().map(e => (e.getInt(6), e.getString(4))).sortByKey(false).take(Constants.VARIETY_TOP_NUM)
+    variety.distinct().filter(e => (e.getInt(6) != null)).filter(e => (e.getString(4) != null))
+      .map(e => (e.getInt(6), e.getString(4))).sortByKey(false).take(Constants.VARIETY_TOP_NUM)
       .foreach(e => {
         val variety = new Variety(e._1.toDouble, e._2, Constants.VARIETY_PLAYNUM)
         addvariety(variety, client)
@@ -48,7 +52,7 @@ object MarketVarietySpark {
     })
 
     // 播放量前10的分类占比
-    variety.distinct().filter(e => (e.getString(5) != null)).flatMap(e => {
+    variety.distinct().filter(e => (null != e.get(5))).filter(e => (e.getString(5) != null)).flatMap(e => {
       val splits = e.getString(5).split(" ")
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(6))
@@ -59,7 +63,7 @@ object MarketVarietySpark {
       })
 
     // 播放量最多嘉宾Top10
-    variety.distinct().filter(e => (null != e.get(9))).flatMap(e => {
+    variety.distinct().filter(e => (null != e.get(6))).filter(e => (null != e.get(9))).flatMap(e => {
       val splits = e.getString(9).split(" ")
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(6))
