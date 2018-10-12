@@ -19,6 +19,7 @@ object MarketLiteratureSpark {
   def main(args: Array[String]): Unit = {
 
     val spark = SparkSession.builder.appName("MarketLiteratureSpark").getOrCreate
+    // val spark = SparkSession.builder.master("local").appName("MarketLiteratureSpark").getOrCreate
     EsUtils.registerESTable(spark, "literature", "market_literature", "literature")
     val startDate = DateUtils.getYesterdayDate();
     val endDate = DateUtils.getTodayDate();
@@ -37,7 +38,7 @@ object MarketLiteratureSpark {
     })
 
     //  各标签占比情况
-    literature.distinct().flatMap(e => {
+    literature.distinct().filter(e => (e.get(2) != null)).filter(e => (e.get(5) != null)).flatMap(e => {
       val splits = e.getString(5).split(" ")
       for (i <- 0 until splits.length - 1)
         yield (splits(i), 1)
@@ -46,7 +47,7 @@ object MarketLiteratureSpark {
     })
 
     // 各标签点击量占比
-    literature.distinct().filter(e => (e.get(2) != null)).flatMap(e => {
+    literature.distinct().filter(e => (e.get(2) != null)).filter(e => (e.get(5) != null)).flatMap(e => {
       val splits = e.getString(5).split(Constants.FILM_SPLIT_SPACE)
       for (i <- 0 until splits.length - 1)
         yield (splits(i), e.getLong(2))
@@ -74,11 +75,6 @@ object MarketLiteratureSpark {
       addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_AUTHOR), client)
     })
 
-//    // mainclass 点击量排名占比
-//    literature.distinct().filter(e => (e.get(2) != null)).map(e => (e.getString(6), e.getLong(2))).reduceByKey(_ + _).map(e => (e._2, e._1))
-//      .sortByKey(false).take(15).foreach(e => {
-//      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_MAINCLASS), client)
-//    })
 
     // subclass 点击量排名占比
     literature.distinct().filter(e => (e.get(2) != null)).map(e => (e.getString(9), e.getLong(2))).reduceByKey(_ + _).map(e => (e._2, e._1))
