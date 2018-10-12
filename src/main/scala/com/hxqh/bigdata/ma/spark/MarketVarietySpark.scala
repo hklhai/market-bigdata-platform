@@ -20,8 +20,8 @@ object MarketVarietySpark {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder.appName("MarketVarietySpark").getOrCreate
     registerESTable(spark, "film", "film_data", "film")
-    val startDate = DateUtils.getYesterdayDate();
-    val endDate = DateUtils.getTodayDate();
+    val startDate = DateUtils.getYesterdayDate()
+    val endDate = DateUtils.getTodayDate()
 
 
     val sql = "select * from Film  where  category = 'variety'  and addTime >='" + startDate + "' and addTime <= '" + endDate + "'"

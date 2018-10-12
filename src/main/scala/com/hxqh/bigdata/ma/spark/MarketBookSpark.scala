@@ -20,8 +20,8 @@ object MarketBookSpark {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder.appName("MarketBookSpark").getOrCreate
     registerESTable(spark, "book", "market_book2", "book")
-    val startDate = DateUtils.getYesterdayDate();
-    val endDate = DateUtils.getTodayDate();
+    val startDate = DateUtils.getYesterdayDate()
+    val endDate = DateUtils.getTodayDate()
 
     val sql = "select * from book where addTime>='" + startDate + "' and addTime<= '" + endDate + "'"
     val book = spark.sql(sql).rdd

@@ -21,16 +21,19 @@ object MarketSoapSpark {
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder.appName("MarketSoapSpark").getOrCreate
-    //    val spark = SparkSession.builder.appName("MarketSoapSpark").getOrCreate
+    // val spark = SparkSession.builder.master("local").appName("MarketSoapSpark").getOrCreate
     registerESTable(spark, "film", "film_data", "film")
-    val startDate = DateUtils.getYesterdayDate();
-    val endDate = DateUtils.getTodayDate();
+    val startDate = DateUtils.getYesterdayDate()
+    val endDate = DateUtils.getTodayDate()
+    //    val startDate = DateUtils.getTodayDate()
+    //    val endDate = DateUtils.getTomorrow()
 
     val sql = "select * from Film  where  category = 'soap'  and addTime >='" + startDate + "' and addTime <= '" + endDate + "'"
+
     val soap = spark.sql(sql).rdd
     soap.cache
     val client = ElasticSearchUtils.getClient
-
+    //[[2018-10-12 00:50:35,soap,0,林正忠,不要怂英雄,网剧 普通话 内地,237,0.0,iqiyi,田渤 刘耀阳 胡悦 赵杰 林正忠,1892]]
     // [2018-03-21 09:58:39,soap,0,卫廉,城市传说,内地 科幻剧 普通话,7392000,0.0,iqiyi,莫芷涵 任茜贝 滕洋铖 王子月 杨旻浩 黄小熠,4324]
     // 播放量Top10
     val titlePlayNum = soap.distinct().map(e => (e.getInt(6), e.get(4))).sortByKey(false).take(Constants.SOAP_TOP_NUM)
@@ -39,19 +42,19 @@ object MarketSoapSpark {
     })
 
     // 分类占比
-    soap.distinct().flatMap(e => (e.getString(5).split(" "))).map((_, 1)).
+    soap.distinct().filter(e => (e.get(5) != null)).flatMap(e => (e.getString(5).split(" "))).map((_, 1)).
       reduceByKey(_ + _).filter(e => (e._2 > 10)).collect().foreach(x => {
       addSoap(new Soap(new Date(), x._2.toDouble, x._1, Constants.SOAP_LABEL_PIE), client)
     })
 
     // 评论量Top10
-    soap.distinct().map(e => ((e.getInt(10), e.getString(4)))).sortByKey(false).take(Constants.SOAP_TOP_NUM)
+    soap.distinct().filter(e => (e.get(10) != null)).map(e => ((e.getInt(10), e.getString(4)))).sortByKey(false).take(Constants.SOAP_TOP_NUM)
       .foreach(e => {
         addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_SCORE_TITLE), client)
       })
 
     // 播放量最多演员Top10
-    soap.distinct().filter(e => (null != e.get(9))).flatMap(e => {
+    soap.distinct().filter(e => (null != e.get(9))).filter(e => (null != e.get(6))).flatMap(e => {
       val splits = e.getString(9).split(" ")
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(6))
@@ -60,7 +63,7 @@ object MarketSoapSpark {
     })
 
     // 评论量最高演员Top10
-    soap.distinct().filter(e => (null != e.get(9))).flatMap(e => {
+    soap.distinct().filter(e => (null != e.get(9))).filter(e => (null != e.get(10))).flatMap(e => {
       val splits = e.getString(9).split(" ")
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(10))
@@ -69,7 +72,7 @@ object MarketSoapSpark {
     })
 
     // 播放量最多导演Top10
-    soap.distinct().filter(e => (null != e.get(3))).flatMap(e => {
+    soap.distinct().filter(e => (null != e.get(3))).filter(e => (null != e.get(6))).flatMap(e => {
       val splits = e.getString(3).split(" ")
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(6))
@@ -80,7 +83,7 @@ object MarketSoapSpark {
 
 
     // 评论量最多导演Top10
-    soap.distinct().filter(e => (null != e.get(3))).flatMap(e => {
+    soap.distinct().filter(e => (null != e.get(3))).filter(e => (null != e.get(10))).flatMap(e => {
       val splits = e.getString(3).split(" ")
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(10))

@@ -143,6 +143,20 @@ public class DateUtils {
     }
 
     /**
+     * 获取明天的日期（yyyy-MM-dd）
+     *
+     * @return 昨天的日期
+     */
+    public static String getTomorrow() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.DAY_OF_YEAR, +1);
+        Date date = cal.getTime();
+        return DATE_FORMAT.format(date);
+    }
+
+
+    /**
      * 格式化日期（yyyy-MM-dd）
      *
      * @param date Date对象
