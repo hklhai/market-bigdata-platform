@@ -88,7 +88,7 @@ object MarketLiteratureSpark {
     literature.distinct().filter(e => (e.get(2) != null)).map(e => (e.getString(1), e.getLong(2))).reduceByKey(_ + _).
       map(e => (e._2, e._1)).sortByKey(false).take(Constants.LITERATURE_TOP_NUM).foreach(e => {
       val y = literatureClicknumAuthor.value
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_AUTHOR,), client)
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_AUTHOR,y), client)
       literatureClicknumAuthor.add(1)
     })
 
