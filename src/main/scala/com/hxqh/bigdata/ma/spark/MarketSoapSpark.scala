@@ -38,19 +38,25 @@ object MarketSoapSpark {
     // 播放量Top10
     val titlePlayNum = soap.distinct().map(e => (e.getInt(6), e.get(4))).sortByKey(false).take(Constants.SOAP_TOP_NUM)
     titlePlayNum.foreach(e => {
-      addSoap(new Soap(new Date(), e._1, e._2.toString, Constants.SOAP_PLAYNUM), client)
+      var i = 1
+      addSoap(new Soap(new Date(), e._1, e._2.toString, Constants.SOAP_PLAYNUM, i), client)
+      i = i + 1
     })
 
     // 分类占比
     soap.distinct().filter(e => (e.get(5) != null)).flatMap(e => (e.getString(5).split(" "))).map((_, 1)).
       reduceByKey(_ + _).filter(e => (e._2 > 10)).collect().foreach(x => {
-      addSoap(new Soap(new Date(), x._2.toDouble, x._1, Constants.SOAP_LABEL_PIE), client)
+      var i = 1
+      addSoap(new Soap(new Date(), x._2.toDouble, x._1, Constants.SOAP_LABEL_PIE, i), client)
+      i = i + 1
     })
 
     // 评论量Top10
     soap.distinct().filter(e => (e.get(10) != null)).map(e => ((e.getInt(10), e.getString(4)))).sortByKey(false).take(Constants.SOAP_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_SCORE_TITLE), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_SCORE_TITLE, i), client)
+        i = i + 1
       })
 
     // 播放量最多演员Top10
@@ -59,7 +65,9 @@ object MarketSoapSpark {
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(6))
     }).reduceByKey(_ + _).map(e => (e._2, e._1)).sortByKey(false).take(Constants.SOAP_TOP_NUM).foreach(e => {
-      addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_GUEST_PLAYNUM), client)
+      var i = 1
+      addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_GUEST_PLAYNUM, i), client)
+      i = i + 1
     })
 
     // 评论量最高演员Top10
@@ -68,7 +76,9 @@ object MarketSoapSpark {
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(10))
     }).reduceByKey(_ + _).map(e => (e._2, e._1)).sortByKey(false).take(Constants.SOAP_TOP_NUM).foreach(e => {
-      addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_GUEST_COMMENT), client)
+      var i = 1
+      addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_GUEST_COMMENT, i), client)
+      i = i + 1
     })
 
     // 播放量最多导演Top10
@@ -78,7 +88,9 @@ object MarketSoapSpark {
         yield (splits(x), e.getInt(6))
     }).reduceByKey(_ + _).map(e => (e._2, e._1)).sortByKey(false).take(Constants.SOAP_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_DIRECTOR_PLAYNUM), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_DIRECTOR_PLAYNUM, i), client)
+        i = i + 1
       })
 
 
@@ -89,7 +101,9 @@ object MarketSoapSpark {
         yield (splits(x), e.getInt(10))
     }).reduceByKey(_ + _).map(e => (e._2, e._1)).sortByKey(false).take(Constants.SOAP_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_DIRECTOR_COMMENT), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_DIRECTOR_COMMENT, i), client)
+        i = i + 1
       })
 
 
