@@ -34,52 +34,68 @@ object MarketMaoYanSpark {
     // 累计分账票房Top10
     maoyan.map(e => (e.getFloat(1), e.getString(2))).sortByKey(false).take(Constants.FILM_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SUM_SPLIT_BOX), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SUM_SPLIT_BOX, i), client)
+        i = i + 1
       })
 
     // 累计综合票房Top10
     maoyan.map(e => (e.getFloat(6), e.getString(2))).sortByKey(false).take(Constants.FILM_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SUM_BOX), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SUM_BOX, i), client)
+        i = i + 1
       })
 
     // 实时分账票房Top10
     maoyan.map(e => (e.getFloat(7), e.getString(2))).sortByKey(false).take(Constants.FILM_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_REALTIME_SPLIT_BOX), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_REALTIME_SPLIT_BOX, 1), client)
+        i = i + 1
       })
 
     // 实时综合票房Top10
     maoyan.map(e => (e.getFloat(8), e.getString(2))).sortByKey(false).take(Constants.FILM_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_REALTIME_BOX), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_REALTIME_BOX, 1), client)
+        i = i + 1
       })
 
 
     // 累计综合票房占比
     maoyan.map(e => (e.getFloat(6), e.getString(2))).distinct().collect()
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SUM_BOX_PIE), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SUM_BOX_PIE, 1), client)
+        i = i + 1
       })
 
     // 实时综合票房占比
     maoyan.map(e => (e.getFloat(8), e.getString(2))).distinct().collect()
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_REALTIME_BOX_PIE), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_REALTIME_BOX_PIE, 1), client)
+        i = i + 1
       })
 
 
     // 排片场次Top10
     maoyan.map(e => (e.getLong(5), e.getString(2))).sortByKey(false).take(Constants.FILM_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SHOWINFO), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SHOWINFO, 1), client)
+        i = i + 1
       })
 
 
     // 排片场次占比
     maoyan.map(e => (e.getLong(5), e.getString(2))).sortByKey(false).collect()
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SHOWINFO_PIE), client)
+        var i = 1
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SHOWINFO_PIE, 1), client)
+        i = i + 1
       })
 
 
@@ -101,6 +117,7 @@ object MarketMaoYanSpark {
         field("numvalue", soap.numvalue).
         field("name", soap.name).
         field("category", soap.category).
+        field("indexNumber", soap.indexNumber).
         field("addTime", todayTime).endObject
 
       client.prepareIndex(Constants.FILM_INDEX, Constants.FILM_TYPE).setSource(content).get

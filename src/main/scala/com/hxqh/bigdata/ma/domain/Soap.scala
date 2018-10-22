@@ -10,5 +10,6 @@ import java.util.Date
 class Soap(var addTime: Date,
            var numvalue: Double,
            var name: String,
-           var category: String) {
+           var category: String,
+           var indexNumber: Int) {
 }
