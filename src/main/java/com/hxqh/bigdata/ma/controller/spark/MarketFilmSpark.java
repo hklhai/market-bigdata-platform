@@ -14,6 +14,7 @@ import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.util.LongAccumulator;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -44,6 +45,8 @@ public class MarketFilmSpark {
         registerESTable(spark, "film", "film_data", "film");
         String startDate = DateUtils.getYesterdayDate();
         String endDate = DateUtils.getTodayDate();
+
+        LongAccumulator accumulator = spark.sparkContext().longAccumulator();
 
         String sql = "select * from Film  where  category = 'film'  and addTime >='" + startDate + "' and addTime <= '" + endDate + "'";
         final Dataset<Row> film = spark.sql(sql);
@@ -83,15 +86,16 @@ public class MarketFilmSpark {
             i = i + 1;
         }
 
+        accumulator.add(1L);
 
         // 电影评分Top10
-        i = 1;
         List<Tuple2<Float, String>> top10TitleByScore =
                 commonFloatTop10(film, Constants.FILM_OFFSET_TITLE, Constants.FILM_OFFSET_SCORE);
         for (Tuple2<Float, String> tuple2 : top10TitleByScore) {
-            Film f = new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_SCORE_NUM, i);
+            Long value = accumulator.value();
+            Film f = new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_SCORE_NUM, value.intValue());
             addFilm(f, client);
-            i = i + 1;
+            accumulator.add(1L);
         }
 
         // 出品公司Top10

@@ -20,8 +20,11 @@ object MarketMaoYanSpark {
   def main(args: Array[String]): Unit = {
 
     val spark = SparkSession.builder.appName("MarketMaoYanSpark").getOrCreate
-//    val spark = SparkSession.builder.master("local").appName("MarketMaoYanSpark").getOrCreate
+    //    val spark = SparkSession.builder.master("local").appName("MarketMaoYanSpark").getOrCreate
     EsUtils.registerESTable(spark, "maoyan", "maoyan", "film")
+
+    val movieSumBoxAccumulator = spark.sparkContext.accumulator(1, "movieSumBox")
+    val movieShowInfoAccumulator = spark.sparkContext.accumulator(1, "movieShowInfo")
 
     val sql = "select * from maoyan where addTime = ( select max(addTime) from maoyan ) "
     val maoyan = spark.sql(sql).rdd
@@ -42,11 +45,12 @@ object MarketMaoYanSpark {
       })
 
     // 累计综合票房Top10
-    i = 1
     maoyan.map(e => (e.getFloat(6), e.getString(2))).sortByKey(false).take(Constants.FILM_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SUM_BOX, i), client)
-        i = i + 1
+        val x = movieSumBoxAccumulator.value
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SUM_BOX, x), client)
+        movieSumBoxAccumulator.add(1)
+        print(x + "========================================")
       })
 
     // 实时分账票房Top10
@@ -87,11 +91,12 @@ object MarketMaoYanSpark {
 
 
     // 排片场次Top10
-    i = 1
     maoyan.map(e => (e.getLong(5), e.getString(2))).sortByKey(false).take(Constants.FILM_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SHOWINFO, 1), client)
-        i = i + 1
+        val y = movieShowInfoAccumulator.value
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.MOVIE_SHOWINFO, y), client)
+        movieShowInfoAccumulator.add(1)
+        print(y + "========================================")
       })
 
 

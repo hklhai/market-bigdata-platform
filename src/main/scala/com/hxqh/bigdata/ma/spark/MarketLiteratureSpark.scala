@@ -19,7 +19,10 @@ object MarketLiteratureSpark {
   def main(args: Array[String]): Unit = {
 
     val spark = SparkSession.builder.appName("MarketLiteratureSpark").getOrCreate
-    // val spark = SparkSession.builder.master("local").appName("MarketLiteratureSpark").getOrCreate
+    //    val spark = SparkSession.builder.master("local").appName("MarketLiteratureSpark").getOrCreate
+
+    val accumulator = spark.sparkContext.accumulator(1, "literature")
+    val literatureClicknumAuthor = spark.sparkContext.accumulator(1, "literatureClicknumAuthor")
     EsUtils.registerESTable(spark, "literature", "market_literature", "literature")
     val startDate = DateUtils.getYesterdayDate()
     val endDate = DateUtils.getTodayDate()
@@ -32,15 +35,16 @@ object MarketLiteratureSpark {
     //                     author  clicknum  commentnum  label  mainclass  name     subclass
     // 2018-04-02 15:22:38,火影忍者,14513,3,0,爽文 热血 英雄无敌 生活,男频,特战狂兵,17k,都市小说
     // 累计点击量最多作品排名Top10
-    var i = 1
     literature.distinct().filter(e => (e.get(2) != null)).map(e => (e.getString(7), e.getLong(2))).reduceByKey(_ + _).map(e => (e._2, e._1))
-      .sortByKey(false).take(Constants.LITERATURE_TOP_NUM).foreach(e => {
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_PLAYNUM, i), client)
-      i = i + 1
+      .sortByKey(false).take(Constants.LITERATURE_TOP_NUM).foreach(f = e => {
+      val x = accumulator.value
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_PLAYNUM, x), client)
+      accumulator.add(1)
+      print(x)
     })
 
     //  各标签占比情况
-    i = 1
+    var i = 1
     literature.distinct().filter(e => (e.get(2) != null)).filter(e => (e.get(5) != null)).flatMap(e => {
       val splits = e.getString(5).split(" ")
       for (i <- 0 until splits.length - 1)
@@ -80,11 +84,12 @@ object MarketLiteratureSpark {
       })
 
     // 累计点击量最多作者排名Top10
-    i = 1
+
     literature.distinct().filter(e => (e.get(2) != null)).map(e => (e.getString(1), e.getLong(2))).reduceByKey(_ + _).
       map(e => (e._2, e._1)).sortByKey(false).take(Constants.LITERATURE_TOP_NUM).foreach(e => {
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_AUTHOR, i), client)
-      i = i + 1
+      val y = literatureClicknumAuthor.value
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_AUTHOR,), client)
+      literatureClicknumAuthor.add(1)
     })
 
 

@@ -25,11 +25,10 @@ object MarketSoapSpark {
     registerESTable(spark, "film", "film_data", "film")
     val startDate = DateUtils.getYesterdayDate()
     val endDate = DateUtils.getTodayDate()
-    //    val startDate = DateUtils.getTodayDate()
-    //    val endDate = DateUtils.getTomorrow()
+
+    val soapScoreTitleAccumulator = spark.sparkContext.accumulator(1, "soapScoreTitle")
 
     val sql = "select * from Film  where  category = 'soap'  and addTime >='" + startDate + "' and addTime <= '" + endDate + "'"
-
     val soap = spark.sql(sql).rdd
     soap.cache
     val client = ElasticSearchUtils.getClient
@@ -54,11 +53,12 @@ object MarketSoapSpark {
     })
 
     // 评论量Top10
-    i = 1
     soap.distinct().filter(e => (e.get(10) != null)).map(e => ((e.getInt(10), e.getString(4)))).sortByKey(false).take(Constants.SOAP_TOP_NUM)
       .foreach(e => {
-        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_SCORE_TITLE, i), client)
-        i = i + 1
+        val x = soapScoreTitleAccumulator.value
+        addSoap(new Soap(new Date(), e._1.toDouble, e._2, Constants.SOAP_SCORE_TITLE, x), client)
+        soapScoreTitleAccumulator.add(1)
+        print(x)
       })
 
     // 播放量最多演员Top10
