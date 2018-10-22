@@ -34,42 +34,50 @@ object MarketVarietySpark {
 
     // [2018-03-20 10:45:36,variety,0,null,：医学泰斗寻找长寿秘诀 馒头白水竟是百岁老人的日常食谱,内地 其它,101000,0.0,iqiyi,刘婧,27]
     // 播放量Top10
+    var i = 1
     variety.distinct().filter(e => (e.getInt(6) != null)).filter(e => (e.getString(4) != null))
       .map(e => (e.getInt(6), e.getString(4))).sortByKey(false).take(Constants.VARIETY_TOP_NUM)
       .foreach(e => {
-        val variety = new Variety(e._1.toDouble, e._2, Constants.VARIETY_PLAYNUM)
+        val variety = new Variety(e._1.toDouble, e._2, Constants.VARIETY_PLAYNUM, i)
         addvariety(variety, client)
+        i = i + 1
       })
 
     // 分类占比
+    i = 1
     variety.distinct().filter(e => (e.getString(5) != null)).flatMap(e => {
       val splits = e.getString(5).split(" ")
       for (x <- 0 until splits.length - 1)
         yield (splits(x), 1)
     }).reduceByKey(_ + _).filter(e => e._2 > 10).collect().foreach(e => {
-      val variety = new Variety(e._2.toDouble, e._1, Constants.VARIETY_LABEL_PIE)
+      val variety = new Variety(e._2.toDouble, e._1, Constants.VARIETY_LABEL_PIE, i)
       addvariety(variety, client)
+      i = i + 1
     })
 
     // 播放量前10的分类占比
+    i = 1
     variety.distinct().filter(e => (null != e.get(5))).filter(e => (e.getString(5) != null)).flatMap(e => {
       val splits = e.getString(5).split(" ")
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(6))
     }).reduceByKey(_ + _).map(e => (e._2, e._1)).sortByKey(false).take(Constants.VARIETY_TOP_NUM)
       .foreach(e => {
-        val variety = new Variety(e._1.toDouble, e._2, Constants.VARIETY_LABEL_PLAYNUM_PIE)
+        val variety = new Variety(e._1.toDouble, e._2, Constants.VARIETY_LABEL_PLAYNUM_PIE, i)
         addvariety(variety, client)
+        i = i + 1
       })
 
     // 播放量最多嘉宾Top10
+    i = 1
     variety.distinct().filter(e => (null != e.get(6))).filter(e => (null != e.get(9))).flatMap(e => {
       val splits = e.getString(9).split(" ")
       for (x <- 0 until splits.length - 1)
         yield (splits(x), e.getInt(6))
     }).reduceByKey(_ + _).map(e => (e._2, e._1)).sortByKey(false).take(Constants.VARIETY_TOP_NUM).foreach(e => {
-      val variety = new Variety(e._1.toDouble, e._2, Constants.VARIETY_GUEST_PALYNUM)
+      val variety = new Variety(e._1.toDouble, e._2, Constants.VARIETY_GUEST_PALYNUM, i)
       addvariety(variety, client)
+      i = i + 1
     })
 
 
@@ -101,6 +109,7 @@ object MarketVarietySpark {
       field("numvalue", variety.numvalue).
       field("name", variety.name).
       field("category", variety.category).
+      field("indexNumber", variety.indexNumber).
       field("addTime", todayTime).endObject
 
     client.prepareIndex(Constants.FILM_INDEX, Constants.FILM_TYPE).setSource(content).get

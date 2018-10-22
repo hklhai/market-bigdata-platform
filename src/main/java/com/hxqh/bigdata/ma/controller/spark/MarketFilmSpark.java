@@ -64,61 +64,77 @@ public class MarketFilmSpark {
 
 
         // 播放量Top10
+        Integer i = 1;
         List<Tuple2<Long, String>> top10Title = commonTop10(film, Constants.FILM_OFFSET_TITLE, Constants.FILM_OFFSET_PLAYNUM);
         for (Tuple2<Long, String> tuple2 : top10Title) {
-            Film f = new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_PLAYNUM);
+            Film f = new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_PLAYNUM, i);
             addFilm(f, client);
+            i = i + 1;
         }
 
 
         // 分类占比
+        i = 1;
         JavaPairRDD<String, Long> stringLongJavaPairRDD = labelPie(film);
         List<Tuple2<String, Long>> collect = stringLongJavaPairRDD.collect();
         for (Tuple2<String, Long> tuple2 : collect) {
-            Film f = new Film(new Date(), Double.valueOf(tuple2._2), tuple2._1, Constants.FILM_LABEL_PIE);
+            Film f = new Film(new Date(), Double.valueOf(tuple2._2), tuple2._1, Constants.FILM_LABEL_PIE, i);
             addFilm(f, client);
+            i = i + 1;
         }
 
 
         // 电影评分Top10
+        i = 1;
         List<Tuple2<Float, String>> top10TitleByScore =
                 commonFloatTop10(film, Constants.FILM_OFFSET_TITLE, Constants.FILM_OFFSET_SCORE);
         for (Tuple2<Float, String> tuple2 : top10TitleByScore) {
-            Film f = new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_SCORE_NUM);
+            Film f = new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_SCORE_NUM, i);
             addFilm(f, client);
+            i = i + 1;
         }
 
         // 出品公司Top10
+        i = 1;
         List<Tuple2<Long, String>> top10RDD = companyPlayNum(film, baiduInfo);
         for (Tuple2<Long, String> tuple2 : top10RDD) {
-            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_COMPANY), client);
+            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_COMPANY, i), client);
+            i = i + 1;
         }
 
 
         // 播放量最多演员Top10
+        i = 1;
         List<Tuple2<Long, String>> top10Actors = commonTop10(film, Constants.FILM_OFFSET_ACTOR, Constants.FILM_OFFSET_PLAYNUM);
         for (Tuple2<Long, String> tuple2 : top10Actors) {
-            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_ACTOR_PLAYNUM), client);
+            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_ACTOR_PLAYNUM, i), client);
+            i = i + 1;
         }
 
         //  评分最高演员Top10
+        i = 1;
         List<Tuple2<Float, String>> top10ActorsByScore =
                 commonFloatTop10(film, Constants.FILM_OFFSET_ACTOR, Constants.FILM_OFFSET_SCORE);
         for (Tuple2<Float, String> tuple2 : top10ActorsByScore) {
-            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_ACTOR_SCORE), client);
+            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_ACTOR_SCORE, i), client);
+            i = i + 1;
         }
 
         // 播放量最多导演Top10
+        i = 1;
         List<Tuple2<Long, String>> top10Director = commonTop10(film, Constants.FILM_OFFSET_DIRECTOR, Constants.FILM_OFFSET_PLAYNUM);
         for (Tuple2<Long, String> tuple2 : top10Director) {
-            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_DIRECTOR_PLAYNUM), client);
+            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_DIRECTOR_PLAYNUM, i), client);
+            i = i + 1;
         }
 
         // 评分最高导演Top10
+        i = 1;
         List<Tuple2<Float, String>> top10DirectorByScore =
                 commonFloatTop10(film, Constants.FILM_OFFSET_DIRECTOR, Constants.FILM_OFFSET_SCORE);
         for (Tuple2<Float, String> tuple2 : top10DirectorByScore) {
-            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_DIRECTOR_SCORE), client);
+            addFilm(new Film(new Date(), Double.valueOf(tuple2._1), tuple2._2, Constants.FILM_DIRECTOR_SCORE, i), client);
+            i = i + 1;
         }
 
 
@@ -134,6 +150,7 @@ public class MarketFilmSpark {
                     field("numvalue", film.getNumvalue()).
                     field("name", film.getName()).
                     field("category", film.getCategory()).
+                    field("indexNumber", film.getIndexNumber()).
                     field("addTime", todayTime).endObject();
 
             IndexResponse result = client.prepareIndex(indexName, typeName).setSource(content).get();

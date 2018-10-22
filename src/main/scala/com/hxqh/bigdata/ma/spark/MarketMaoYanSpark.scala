@@ -20,6 +20,7 @@ object MarketMaoYanSpark {
   def main(args: Array[String]): Unit = {
 
     val spark = SparkSession.builder.appName("MarketMaoYanSpark").getOrCreate
+//    val spark = SparkSession.builder.master("local").appName("MarketMaoYanSpark").getOrCreate
     EsUtils.registerESTable(spark, "maoyan", "maoyan", "film")
 
     val sql = "select * from maoyan where addTime = ( select max(addTime) from maoyan ) "

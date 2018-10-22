@@ -13,15 +13,18 @@ public class Film {
     private Double numvalue;
     private String name;
     private String category;
+    private Integer indexNumber;
+
 
     public Film() {
     }
 
-    public Film(Date addTime, Double numvalue, String name, String category) {
+    public Film(Date addTime, Double numvalue, String name, String category, Integer indexNumber) {
         this.addTime = addTime;
         this.numvalue = numvalue;
         this.name = name;
         this.category = category;
+        this.indexNumber = indexNumber;
     }
 
     public Date getAddTime() {
@@ -54,5 +57,13 @@ public class Film {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Integer getIndexNumber() {
+        return indexNumber;
+    }
+
+    public void setIndexNumber(Integer indexNumber) {
+        this.indexNumber = indexNumber;
     }
 }

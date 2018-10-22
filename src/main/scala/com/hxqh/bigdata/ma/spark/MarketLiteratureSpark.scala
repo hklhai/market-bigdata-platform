@@ -32,59 +32,75 @@ object MarketLiteratureSpark {
     //                     author  clicknum  commentnum  label  mainclass  name     subclass
     // 2018-04-02 15:22:38,火影忍者,14513,3,0,爽文 热血 英雄无敌 生活,男频,特战狂兵,17k,都市小说
     // 累计点击量最多作品排名Top10
+    var i = 1
     literature.distinct().filter(e => (e.get(2) != null)).map(e => (e.getString(7), e.getLong(2))).reduceByKey(_ + _).map(e => (e._2, e._1))
       .sortByKey(false).take(Constants.LITERATURE_TOP_NUM).foreach(e => {
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_PLAYNUM), client)
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_PLAYNUM, i), client)
+      i = i + 1
     })
 
     //  各标签占比情况
+    i = 1
     literature.distinct().filter(e => (e.get(2) != null)).filter(e => (e.get(5) != null)).flatMap(e => {
       val splits = e.getString(5).split(" ")
       for (i <- 0 until splits.length - 1)
         yield (splits(i), 1)
     }).reduceByKey(_ + _).map(e => (e._2, e._1)).sortByKey(false).take(15).foreach(e => {
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_LABEL_PIE), client)
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_LABEL_PIE, i), client)
+      i = i + 1
     })
 
     // 各标签点击量占比
+    i = 1
     literature.distinct().filter(e => (e.get(2) != null)).filter(e => (e.get(5) != null)).flatMap(e => {
       val splits = e.getString(5).split(Constants.FILM_SPLIT_SPACE)
       for (i <- 0 until splits.length - 1)
         yield (splits(i), e.getLong(2))
     }).reduceByKey(_ + _).map(e => (e._2, e._1)).sortByKey(false).take(15).foreach(e => {
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_LABEL_CLICKNUM_PIE), client)
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_LABEL_CLICKNUM_PIE, i), client)
+      i = i + 1
     })
 
 
     // 累计评论量最多作品排名Top10
+    i = 1
     literature.distinct().filter(e => (e.get(3) != null)).map(e => (e.getString(7), e.getInt(3))).reduceByKey(_ + _).
       map(e => (e._2, e._1)).sortByKey(false).take(Constants.LITERATURE_TOP_NUM).foreach(e => {
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_COMMENT_TITLE), client)
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_COMMENT_TITLE, i), client)
+      i = i + 1
     })
 
     // 累计评论量最多作者排名Top10
+    i = 1
     literature.distinct().filter(e => (e.get(3) != null)).map(e => (e.getString(1), e.getInt(3))).reduceByKey(_ + _).
       map(e => (e._2, e._1)).sortByKey(false).take(Constants.LITERATURE_TOP_NUM)
       .foreach(e => {
-        addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_COMMENT_AUTHOR), client)
+        addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_COMMENT_AUTHOR, i), client)
+        i = i + 1
       })
 
     // 累计点击量最多作者排名Top10
+    i = 1
     literature.distinct().filter(e => (e.get(2) != null)).map(e => (e.getString(1), e.getLong(2))).reduceByKey(_ + _).
       map(e => (e._2, e._1)).sortByKey(false).take(Constants.LITERATURE_TOP_NUM).foreach(e => {
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_AUTHOR), client)
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_AUTHOR, i), client)
+      i = i + 1
     })
 
 
     // subclass 点击量排名占比
+    i = 1
     literature.distinct().filter(e => (e.get(2) != null)).map(e => (e.getString(9), e.getLong(2))).reduceByKey(_ + _).map(e => (e._2, e._1))
       .sortByKey(false).take(15).foreach(e => {
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_SUBCLASS), client)
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_CLICKNUM_SUBCLASS, i), client)
+      i = i + 1
     })
 
     // subclass 占比
+    i = 1
     literature.distinct().map(e => (e.getString(9), 1)).reduceByKey(_ + _).map(e => (e._2, e._1)).sortByKey(false).take(15).foreach(e => {
-      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_SUBCLASS_PIE), client)
+      addLiterature(new Literature(e._1.toDouble, e._2, Constants.LITERATURE_SUBCLASS_PIE, i), client)
+      i = i + 1
     })
 
 
@@ -103,6 +119,7 @@ object MarketLiteratureSpark {
       field("numvalue", literature.numvalue).
       field("name", literature.name).
       field("category", literature.category).
+      field("indexNumber", literature.indexNumber).
       field("addTime", todayTime).endObject
 
     client.prepareIndex(Constants.BOOKS_ANALYSIS_INDEX, Constants.BOOKS_ANALYSIS_TYPE).setSource(content).get

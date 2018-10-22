@@ -7,5 +7,6 @@ package com.hxqh.bigdata.ma.domain
   */
 class Books(var numvalue: Double,
             var name: String,
-            var category: String) {
+            var category: String,
+            var indexNumber: Int) {
 }
